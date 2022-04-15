@@ -10,9 +10,9 @@ CND_CONF=default
 CND_DISTDIR=dist
 TMPDIR=build/${CND_CONF}/${IMAGE_TYPE}/tmp-packaging
 TMPDIRNAME=tmp-packaging
-OUTPUT_PATH=dist/${CND_CONF}/${IMAGE_TYPE}/PIC16_PICDuino_Translator.X.${IMAGE_TYPE}.${OUTPUT_SUFFIX}
-OUTPUT_BASENAME=PIC16_PICDuino_Translator.X.${IMAGE_TYPE}.${OUTPUT_SUFFIX}
-PACKAGE_TOP_DIR=pic16picduinotranslator.x/
+OUTPUT_PATH=dist/${CND_CONF}/${IMAGE_TYPE}/PICDuino-PIC16_BootloaderBuddy.${IMAGE_TYPE}.${OUTPUT_SUFFIX}
+OUTPUT_BASENAME=PICDuino-PIC16_BootloaderBuddy.${IMAGE_TYPE}.${OUTPUT_SUFFIX}
+PACKAGE_TOP_DIR=picduino-pic16bootloaderbuddy/
 
 # Functions
 function checkReturnCode
@@ -57,15 +57,15 @@ mkdir -p ${TMPDIR}
 
 # Copy files and create directories and links
 cd "${TOP}"
-makeDirectory ${TMPDIR}/pic16picduinotranslator.x/bin
+makeDirectory ${TMPDIR}/picduino-pic16bootloaderbuddy/bin
 copyFileToTmpDir "${OUTPUT_PATH}" "${TMPDIR}/${PACKAGE_TOP_DIR}bin/${OUTPUT_BASENAME}" 0755
 
 
 # Generate tar file
 cd "${TOP}"
-rm -f ${CND_DISTDIR}/${CND_CONF}/package/pic16picduinotranslator.x.tar
+rm -f ${CND_DISTDIR}/${CND_CONF}/package/picduino-pic16bootloaderbuddy.tar
 cd ${TMPDIR}
-tar -vcf ../../../../${CND_DISTDIR}/${CND_CONF}/package/pic16picduinotranslator.x.tar *
+tar -vcf ../../../../${CND_DISTDIR}/${CND_CONF}/package/picduino-pic16bootloaderbuddy.tar *
 checkReturnCode
 
 # Cleanup

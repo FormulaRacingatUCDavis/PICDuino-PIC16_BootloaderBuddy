@@ -42,13 +42,14 @@
 */
 
 #include "mcc_generated_files/mcc.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
 
 
 uint8_t CDCRxBuffer[64];
 uint8_t CDCRxLength = 0;
+
+void EUSART_clear_rx(void){
+    
+}
 
 void Reset(void){
     IO_RC3_SetDigitalOutput();
@@ -98,57 +99,50 @@ void main(void)
     static uint8_t writeBuffer[2];
     bool write = false;
     bool escape = false;
-   
-    
-    
-
-    // When using interrupts, you need to set the Global and Peripheral Interrupt Enable bits
-    // Use the following macros to:
-
-    // Enable the Global Interrupts
-    //INTERRUPT_GlobalInterruptEnable();
-
-    // Enable the Peripheral Interrupts
-    //INTERRUPT_PeripheralInterruptEnable();
-
-    // Disable the Global Interrupts
-    //INTERRUPT_GlobalInterruptDisable();
-
-    // Disable the Peripheral Interrupts
-    //INTERRUPT_PeripheralInterruptDisable()
+    bool enable_uart_to_usb = true; 
     
     while (1)
     {
-       USBDeviceTasks();
+       USBDeviceTasks();                                               //need to run every cycle for proper usb operation
        
-       if( USBUSARTIsTxTrfReady()){
-           
+       if( USBUSARTIsTxTrfReady()){                                    //check that USB is ready
            if(!write & (CDCRxLength > 0)) {                            //check if previous write is complete and data available
                byte = readUSBUART();
                
-               if(escape){
-                   escape = false;
+               if(escape){                 //if last bit was escape bit
+                   escape = false;         //reset escape flag                           
                    switch(byte){
-                       case 0x05:
+                       case 0x05:          //send escape bit
                            write = true;
                            break;
-                       case 0xBB:
-                           Reset();
-                           writeBuffer[0] = 0x01;
-                           putUSBUSART(writeBuffer,1);
+                       case 0xCC:          //disable 
+                           enable_uart_to_usb = false;
                            break;
-                       case 0xAA:
+                       case 0xCD: 
+                           enable_uart_to_usb = true;
+                           break;
+                       case 0xBB:         //reset PIC18                           
+                           Reset();   //reset
+                           
+                           writeBuffer[0] = 0x01;
+                           putUSBUSART(writeBuffer,1);   //acknowledge 
+                           
+                           while(EUSART_is_rx_ready()){  //clear messages received before reset
+                               EUSART_Read(); 
+                           }
+                           
+                           break;
+                       case 0xAA:         //handshake, return 0x99
                            writeBuffer[0] = 0x99;
                            putUSBUSART(writeBuffer,1);
                            break;
-                       default:
-                           writeBuffer[0] = 0xff;
+                       default:           //unexpected, return 0xff 
+                           writeBuffer[0] = 0xee;
                            putUSBUSART(writeBuffer,1);
                    }
                    
                } else if(byte == 0x05){
                    escape = true;
-                   
                } else {
                    write = true;
                }
@@ -159,18 +153,16 @@ void main(void)
                 write = false;
             }
             
-            if(EUSART_is_rx_ready()){
+            if(EUSART_is_rx_ready() && !escape && enable_uart_to_usb){  //if escaped, should not relay UART messages this cycle
                 writeBuffer[0] = EUSART_Read();   
                 putUSBUSART(writeBuffer,1);
             }
-
+           
         }
        
        CDCRxService();
        CDCTxService();
-       
-       //__delay_ms(2);
-    }
+    }  
 }
 
 

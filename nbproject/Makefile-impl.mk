@@ -24,7 +24,7 @@ CLEAN_SUBPROJECTS=${CLEAN_SUBPROJECTS_${SUBPROJECTS}}
 
 
 # Project Name
-PROJECTNAME=PIC16_PICDuino_Translator.X
+PROJECTNAME=PICDuino-PIC16_BootloaderBuddy
 
 # Active Configuration
 DEFAULTCONF=default
